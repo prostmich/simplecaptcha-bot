@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  bot:
+    container_name: "simplecaptcha-bot"
+    build:
+      context: .
+    working_dir: "/usr/src/simplecaptcha-bot"
+    stop_signal: SIGINT
+    restart: unless-stopped
+    command: "python -m app"
+    ports:
+      - "8080:8080"
+  redis:
+    container_name: "simplecaptcha-redis"
+    image: redis:7.0-rc-alpine
+    hostname: redis
+    volumes:
+        - "./redis.conf:/usr/local/etc/redis/redis.conf"
+    command: "redis-server /usr/local/etc/redis/redis.conf"
+    restart: "unless-stopped"
+  worker:
+    container_name: "simplecaptcha-worker"
+    build:
+      context: .
+    working_dir: "/usr/src/simplecaptcha-bot"
+    volumes:
+      - .:/usr/src/simplecaptcha-bot
+    command: "python -m worker"
+    restart: unless-stopped
