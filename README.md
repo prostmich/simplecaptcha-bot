@@ -2,6 +2,8 @@
 
 **Simple Captcha Bot** is your best friend when you want to protect your Telegram chat from spammers.
 
+Try it out! [@simplecaptcha_bot](https://t.me/simplecaptcha_bot)
+
 ![screenshot](screenshot.jpeg)
 ## Features
 
