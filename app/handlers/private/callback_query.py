@@ -17,16 +17,17 @@ async def handle_captcha_answer(
     callback_data: CaptchaAnswerCallbackData,
     captcha: CaptchaService,
 ) -> None:
-    target_id = callback_data.target_id
+    chat_id = callback_data.chat_id
+    user_id = callback_data.user_id
+    salt = callback_data.salt
     answer = callback_data.answer
     markup = None
-    if not await captcha.is_captcha_target(target_id, query.from_user.id):
+    if not await captcha.is_captcha_target(chat_id, user_id, salt):
         text = "Капча уже недействительна"
         result_status = CaptchaResultStatus.FAILURE
     else:
-        target_data = await captcha.get_target_data(target_id)
-        if await captcha.is_correct_answer(target_id, answer):
-            chat = await bot.get_chat(chat_id=target_data.chat_id)
+        if await captcha.is_correct_answer(chat_id, user_id, salt, answer):
+            chat = await bot.get_chat(chat_id)
             text = "Верно! Вы были допущены в чат {chat}".format(
                 chat=html.bold(chat.title) if chat.title else ""
             )
@@ -34,17 +35,14 @@ async def handle_captcha_answer(
                 generate_chat_url_keyboard(chat.username) if chat.username else None
             )
             result_status = CaptchaResultStatus.SUCCESS
-            await bot.approve_chat_join_request(
-                chat_id=target_data.chat_id, user_id=target_data.user_id
-            )
+            await bot.approve_chat_join_request(chat_id, user_id)
         else:
             text = "К сожалению ответ неверный. Попробуйте ещё раз позже."
             result_status = CaptchaResultStatus.FAILURE
-            await bot.decline_chat_join_request(
-                chat_id=target_data.chat_id, user_id=target_data.user_id
-            )
+            await bot.decline_chat_join_request(chat_id, user_id)
+        await captcha.unlock_user(chat_id, user_id, salt)
     result_image = await captcha.get_captcha_result_image(result_status)
-    image_filename = generate_captcha_image_filename(target_id, result_status)
+    image_filename = generate_captcha_image_filename(chat_id, user_id, result_status)
     await bot.edit_message_media(
         media=InputMediaPhoto(
             media=BufferedInputFile(result_image.getvalue(), filename=image_filename),

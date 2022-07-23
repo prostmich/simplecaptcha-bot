@@ -1,3 +1,5 @@
+import asyncio
+from contextlib import suppress
 from typing import Any, Dict, Optional
 
 from arq import create_pool
@@ -44,4 +46,5 @@ class ArqScheduler:
     async def _abort_job(self, job_id: str) -> None:
         if self._redis is None:
             raise Exception("Redis connection is not initialized")
-        await Job(job_id, redis=self._redis).abort()
+        with suppress(asyncio.TimeoutError):
+            await Job(job_id, redis=self._redis).abort(timeout=0)

@@ -7,39 +7,36 @@ from app.misc.loggers import arq_logger as logger
 from app.services.lock_user import LockUserService
 
 
-async def join_expired_task(ctx: Dict[str, Any], target_id: str) -> None:
+async def join_expired_task(
+    ctx: Dict[str, Any], chat_id: int, user_id: int, salt: str
+) -> None:
     bot: Bot = ctx["bot"]
     lock_user: LockUserService = ctx["lock_user_service"]
     logger.info(
-        "Checking if the user with target_id {target_id} passed captcha".format(
-            target_id=target_id,
+        "Checking if the user {user} in chat {chat} passed captcha".format(
+            user=user_id, chat=chat_id
         )
     )
-    target_data = await lock_user.get_target_data(target_id)
-    if not target_data:
+    is_captcha_passed = not await lock_user.is_captcha_target(chat_id, user_id, salt)
+    if is_captcha_passed:
         logger.info(
-            "The user with target_id {target_id} from lock-list already pass captcha".format(
-                target_id=target_id,
+            "The user user {user} in chat {chat} already pass captcha".format(
+                user=user_id, chat=chat_id
             )
         )
         return
     try:
-        await bot.decline_chat_join_request(
-            chat_id=target_data.chat_id, user_id=target_data.user_id
-        )
-        await lock_user.delete_target_data(target_id)
-        await lock_user.delete_correct_answer(target_id)
+        await bot.decline_chat_join_request(chat_id, user_id)
+        await lock_user.delete_correct_answer(chat_id, user_id, salt)
     except TelegramAPIError as e:
         logger.error(
             "Error while declining chat join request "
-            "for user with target_id {target_id}: {error}".format(
-                target_id=target_id, error=e
+            "for user {user} in chat {chat}: {error}".format(
+                user=user_id, chat=chat_id, error=e
             )
         )
+        return
     logger.info(
-        "The user's ({user} join request to chat ({chat}) "
-        "was declined because of a captcha timeout".format(
-            user=target_data.user_id,
-            chat=target_data.chat_id,
-        )
+        "The user ({user}) join request to chat ({chat}) "
+        "was declined because of a captcha timeout".format(user=user_id, chat=chat_id)
     )
