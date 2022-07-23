@@ -10,7 +10,7 @@ MAX_CAPTCHA_BUTTONS_ROW_LENGTH = 5
 
 
 def generate_captcha_keyboard(
-    target_id: str, emoji_data: Set[Emoji]
+    chat_id: int, user_id: int, salt: str, emoji_data: Set[Emoji]
 ) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     for emoji in emoji_data:
@@ -18,7 +18,7 @@ def generate_captcha_keyboard(
             InlineKeyboardButton(
                 text=emoji.symbol,
                 callback_data=CaptchaAnswerCallbackData(
-                    target_id=target_id, answer=emoji.code
+                    chat_id=chat_id, user_id=user_id, salt=salt, answer=emoji.code
                 ).pack(),
             )
         )

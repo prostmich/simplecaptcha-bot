@@ -2,5 +2,7 @@ from aiogram.dispatcher.filters.callback_data import CallbackData
 
 
 class CaptchaAnswerCallbackData(CallbackData, prefix="captcha"):
-    target_id: str
+    chat_id: int
+    user_id: int
+    salt: str
     answer: str

@@ -7,17 +7,19 @@ from app.services.scheduler import ArqScheduler
 
 class CaptchaScheduler(ArqScheduler):
     async def enqueue_join_expire_job(
-        self, target_id: str, captcha_duration: timedelta
+        self, chat_id: int, user_id: int, salt: str, captcha_duration: timedelta
     ) -> None:
         await self.enqueue_job(
             "join_expired_task",
-            job_kwargs={"target_id": target_id},
+            job_kwargs={"chat_id": chat_id, "user_id": user_id, "salt": salt},
             job_config=JobConfig(
-                job_id=LockJobKey(target_id=target_id).pack(),
+                job_id=LockJobKey(chat_id=chat_id, user_id=user_id, salt=salt).pack(),
                 run_after=captcha_duration,
             ),
         )
 
-    async def abort_join_expire_job(self, target_id: str) -> None:
-        lock_key = LockJobKey(target_id=target_id).pack()
+    async def abort_join_expire_job(
+        self, chat_id: int, user_id: int, salt: str
+    ) -> None:
+        lock_key = LockJobKey(chat_id=chat_id, user_id=user_id, salt=salt).pack()
         await self.abort_job(lock_key)

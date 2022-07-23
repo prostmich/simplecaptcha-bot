@@ -35,27 +35,19 @@ class CaptchaStaticData(BaseModel):
 class CaptchaRedisKeyPrefix(str):
     LOCK_JOB = "LOCK"
     ANSWER = "ANSWER"
-    LOCK_TARGET = "LOCK_TARGET"
-
-
-class TargetData(BaseModel):
-    user_id: int
-    chat_id: int
 
 
 @dataclass
 class LockJobKey(RedisBaseKey):
     prefix = CaptchaRedisKeyPrefix.LOCK_JOB
-    target_id: str
+    chat_id: int
+    user_id: int
+    salt: str
 
 
 @dataclass
 class AnswerKey(RedisBaseKey):
     prefix = CaptchaRedisKeyPrefix.ANSWER
-    target_id: str
-
-
-@dataclass
-class LockTargetKey(RedisBaseKey):
-    prefix = CaptchaRedisKeyPrefix.LOCK_TARGET
-    target_id: str
+    chat_id: int
+    user_id: int
+    salt: str
