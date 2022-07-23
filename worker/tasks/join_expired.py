@@ -36,8 +36,9 @@ async def join_expired_task(ctx: Dict[str, Any], target_id: str) -> None:
                 target_id=target_id, error=e
             )
         )
+        return
     logger.info(
-        "The user's ({user} join request to chat ({chat}) "
+        "The user ({user}) join request to chat ({chat}) "
         "was declined because of a captcha timeout".format(
             user=target_data.user_id,
             chat=target_data.chat_id,
