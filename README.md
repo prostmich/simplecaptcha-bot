@@ -13,14 +13,14 @@ Try it out! [@simplecaptcha_bot](https://t.me/simplecaptcha_bot)
 
 ## Tech Stack
 - [Aiogram](https://github.com/aiogram/aiogram) v3.0.0b3 - framework for Telegram Bot API
-- [Redis](https://redis.io>) v7.0 - storage of temporary data and scheduled tasks
-- [Arq](https://github.com/samuelcolvin/arq>) v0.22 - scheduler
+- [Redis](https://redis.io) v7.0 - storage of temporary data and scheduled tasks
+- [Arq](https://github.com/samuelcolvin/arq) v0.22 - scheduler
 
 ## Installation
 
 1. `git clone https://github.com/prostmich/simplecaptcha-bot.git`
 2. `cd simplecaptcha-bot`
-3. Rename `congig_example.ini` to `config.ini`
+3. Rename `config_example.ini` to `config.ini`
 4. Fill in `config.ini` with your credentials (if you do not want to use webhooks, do not fill in the `webhook` section)
 6. Set the Redis password in `redis.conf`
 
