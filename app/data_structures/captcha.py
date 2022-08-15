@@ -24,7 +24,6 @@ class CaptchaResultStatus(str, Enum):
 
 class EmojiData(BaseModel):
     symbol: str
-    title: str
     code: str
 
 
