@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "captchabot"
+name = "simplecaptcha-bot"
 version = "0.1.0"
 description = ""
 authors = ["Mikhail Smolnikov <smolnik.mikhail@gmail.com>"]
