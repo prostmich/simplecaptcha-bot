@@ -11,6 +11,9 @@ services:
     command: "python -m app"
     ports:
       - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
   redis:
     container_name: "simplecaptcha-redis"
     image: redis:7.0-rc-alpine
@@ -19,6 +22,25 @@ services:
         - "./redis.conf:/usr/local/etc/redis/redis.conf"
     command: "redis-server /usr/local/etc/redis/redis.conf"
     restart: "unless-stopped"
+  postgres:
+    container_name: "simplecaptcha-postgres"
+    image: postgres:14-alpine
+    hostname: postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=simplecaptcha
+      - POSTGRES_PASSWORD=simplecaptcha
+      - POSTGRES_DB=simplecaptcha
+  db_migration:
+    container_name: "simplecaptcha-alembic"
+    build:
+        context: .
+    restart: "on-failure"
+    depends_on:
+      - postgres
+    volumes:
+      - .:/usr/src/simplecaptcha-bot
+    command: sh -c "python -m alembic upgrade head"
   worker:
     container_name: "simplecaptcha-worker"
     build:

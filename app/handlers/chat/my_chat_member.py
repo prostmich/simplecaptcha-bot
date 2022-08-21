@@ -1,5 +1,5 @@
 from aiogram import Bot, Router, types
-from aiogram.dispatcher.filters import (
+from aiogram.filters import (
     ADMINISTRATOR,
     JOIN_TRANSITION,
     KICKED,

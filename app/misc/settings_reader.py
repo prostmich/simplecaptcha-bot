@@ -52,6 +52,18 @@ class RedisSettings(BaseModel):
         return f"redis://:{self.password}@{self.host}:{self.port}/{self.db}"
 
 
+class PostgresSettings(BaseModel):
+    host: str
+    port: int
+    user: str
+    password: str
+    db: str
+
+    @property
+    def connection_uri(self):
+        return f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}:{self.port}/{self.db}"
+
+
 class CaptchaSettings(BaseModel):
     duration: Union[int, datetime.timedelta]
 
@@ -67,6 +79,7 @@ class Settings(BaseSettings):
     webhook: WebhookSettings
     webapp: WebAppSettings
     redis: RedisSettings
+    postgres: PostgresSettings
     captcha: CaptchaSettings
 
     class Config:

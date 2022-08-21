@@ -6,14 +6,18 @@ authors = ["Mikhail Smolnikov <smolnik.mikhail@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-aiogram = "3.0.0b3"
+aiogram = "3.0.0b4"
 arq = "^0.22"
 redis = ">=4.2.0rc1"
+SQLAlchemy = "^1.4.40"
+asyncpg = "^0.26.0"
+greenlet = "^1.1.2"
+alembic = "^1.8.1"
 
 [tool.poetry.dev-dependencies]
 black = "^22.6.0"
 isort = "^5.10.1"
-flake8 = "^4.0.1"
+flake8 = "^5.0.4"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

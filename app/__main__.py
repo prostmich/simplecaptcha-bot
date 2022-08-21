@@ -4,7 +4,8 @@ from aiogram import Bot, Dispatcher
 from aiohttp import web
 
 from app.handlers import main_router
-from app.misc.configure import configure_logging, configure_services
+from app.middlewares.setup import setup_middlewares
+from app.misc.configure import configure_logging, configure_postgres, configure_services
 from app.misc.settings_reader import Settings
 from app.misc.webhook import configure_app
 
@@ -30,6 +31,8 @@ async def main() -> None:
     configure_logging()
     bot = Bot(token=settings.bot.token, parse_mode="html")
     dp = Dispatcher()
+    session_maker = configure_postgres(settings)
+    setup_middlewares(dp, session_maker)
     dp.include_router(main_router)
     dp.startup.register(on_startup)
     dp.shutdown.register(on_shutdown)

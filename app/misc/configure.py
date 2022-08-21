@@ -1,6 +1,9 @@
 import logging
 from typing import Any, Dict
 
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
+
 from app.misc.settings_reader import Settings
 from app.services.captcha import CaptchaService
 from app.services.captcha_generator import CaptchaGenerator
@@ -21,6 +24,14 @@ async def configure_services(settings: Settings) -> Dict[str, Any]:
     await captcha_scheduler.init(connection_uri=settings.redis.connection_uri)
     captcha_generator.load_emoji()
     return {"captcha": captcha}
+
+
+def configure_postgres(settings: Settings) -> sessionmaker:
+    engine = create_async_engine(
+        settings.postgres.connection_uri,
+        future=True,
+    )
+    return sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 
 def configure_logging() -> None:
