@@ -12,9 +12,12 @@ Try it out! [@simplecaptcha_bot](https://t.me/simplecaptcha_bot)
 - Automatically rejects requests if user does not respond to captcha after 2 minutes
 
 ## Tech Stack
-- [Aiogram](https://github.com/aiogram/aiogram) v3.0.0b3 - framework for Telegram Bot API
+- [Aiogram](https://github.com/aiogram/aiogram) v3.0.0b4 - framework for Telegram Bot API
 - [Redis](https://redis.io) v7.0 - storage of temporary data and scheduled tasks
 - [Arq](https://github.com/samuelcolvin/arq) v0.22 - scheduler
+- [PostgreSQL](https://www.postgresql.org) v14 - database to store long-term data
+- [SQLAlchemy](https://www.sqlalchemy.org) v1.4.40 - ORM for PostgreSQL
+- [Fluentogram](https://github.com/Arustinal/fluentogram) v1.1.3 - internalization support
 
 ## Installation
 
