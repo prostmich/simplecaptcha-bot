@@ -6,3 +6,8 @@ class CaptchaAnswerCallbackData(CallbackData, prefix="captcha"):
     user_id: int
     salt: str
     answer: str
+
+
+class LangCallbackData(CallbackData, prefix="lang"):
+    lang_code: str
+    target: str

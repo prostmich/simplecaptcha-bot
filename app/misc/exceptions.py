@@ -27,10 +27,16 @@ class CustomException(Exception):
 
 
 class FileOpenError(IOError, CustomException):
-    def __init__(self, *args: Optional[Any]) -> None:
-        super(CustomException).__init__(*args)
+    pass
 
 
 class CaptchaLoadError(ValueError, CustomException):
-    def __init__(self, *args: Optional[Any]) -> None:
-        super(CustomException).__init__(*args)
+    pass
+
+
+class UnknownLanguageError(ValueError, CustomException):
+    pass
+
+
+class LanguageAlreadySetError(ValueError, CustomException):
+    pass

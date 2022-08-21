@@ -1,13 +1,20 @@
-from aiogram import Bot, Router, types
+from aiogram import Bot, Router
 from aiogram.filters import (
     ADMINISTRATOR,
     JOIN_TRANSITION,
     KICKED,
+    LEAVE_TRANSITION,
     LEFT,
     MEMBER,
     RESTRICTED,
     ChatMemberUpdatedFilter,
 )
+from aiogram.types import ChatMember, ChatMemberAdministrator, ChatMemberUpdated
+
+from app.db.models.chat import Chat
+from app.db.storages.factory import StorageFactory
+from app.db.use_cases.chat_settings import ChatSettingsUseCase
+from app.services.content_generators.factory import ContentFactory
 
 router = Router()
 
@@ -17,8 +24,8 @@ PROMOTED_TRANSITION = (
 ) >> ADMINISTRATOR
 
 
-def has_bot_need_permissions(member: types.ChatMember) -> bool:
-    if not isinstance(member, types.ChatMemberAdministrator):
+def has_bot_need_permissions(member: ChatMember) -> bool:
+    if not isinstance(member, ChatMemberAdministrator):
         return False
     return all(getattr(member, permission) for permission in NEED_PERMISSIONS)
 
@@ -26,54 +33,68 @@ def has_bot_need_permissions(member: types.ChatMember) -> bool:
 @router.my_chat_member(
     ChatMemberUpdatedFilter(member_status_changed=JOIN_TRANSITION),
 )
-async def bot_joined(update: types.ChatMemberUpdated, bot: Bot) -> None:
-    text = (
-        "Привет! У вас есть проблема с ботами-спамерами в чате?\n"
-        "У меня есть решение - captcha.\n\n"
+async def bot_joined(
+    update: ChatMemberUpdated,
+    bot: Bot,
+    content_factory: ContentFactory,
+    storage_factory: StorageFactory,
+) -> None:
+    permissions_status = has_bot_need_permissions(update.new_chat_member)
+    use_case = ChatSettingsUseCase(storage_factory)
+    await use_case.set_bot_permissions_status(
+        chat_id=update.chat.id, has_permissions=permissions_status
     )
-    if has_bot_need_permissions(update.new_chat_member):
-        text += (
-            "🎉 Я вижу, вы мне уже выдали нужные права администратора.\n"
-            "Теперь я буду проверять всех новых участников на наличие спамеров."
-        )
-    else:
-        text += (
-            "😢 Я вижу, вы мне ещё не выдали нужные права администратора.\n"
-            "К сожалению, без них я не смогу проверять новых участников на наличие спамеров.\n\n"
-            "Права, которые мне нужны: \n"
-            "👉 Пригласительные ссылки"
-        )
-
-    await bot.send_message(chat_id=update.chat.id, text=text)
+    text = content_factory.text.choose_lang()
+    markup = content_factory.keyboard.choose_lang(target="group_welcome_msg")
+    await bot.send_message(chat_id=update.chat.id, text=text, reply_markup=markup)
 
 
 @router.my_chat_member(
     ChatMemberUpdatedFilter(member_status_changed=PROMOTED_TRANSITION),
 )
-async def bot_promoted(update: types.ChatMemberUpdated, bot: Bot) -> None:
-    if has_bot_need_permissions(update.new_chat_member):
-        text = (
-            "🎉 Я получил нужные права администратора.\n"
-            "Теперь я буду проверять новые заявки и отсеивать спамеров."
-        )
-    else:
-        text = (
-            "😢 Я получил не все нужные права администратора.\n"
-            "К сожалению, без них я не смогу проверять новых заявки и отсеивать спамеров.\n\n"
-            "Права, которые мне нужны: \n"
-            "👉 Пригласительные ссылки"
-        )
+async def bot_promoted(
+    update: ChatMemberUpdated,
+    bot: Bot,
+    content_factory: ContentFactory,
+    storage_factory: StorageFactory,
+    chat: Chat,
+) -> None:
+    permissions_status = has_bot_need_permissions(update.new_chat_member)
+    if chat.has_permissions == permissions_status:
+        return
+    use_case = ChatSettingsUseCase(storage_factory)
+    await use_case.set_bot_permissions_status(
+        chat_id=update.chat.id, has_permissions=permissions_status
+    )
+    text = content_factory.text.bot_promoted(has_correct_permissions=permissions_status)
     await bot.send_message(chat_id=update.chat.id, text=text)
 
 
 @router.my_chat_member(
     ChatMemberUpdatedFilter(member_status_changed=ADMINISTRATOR >> MEMBER),
 )
-async def bot_demoted(update: types.ChatMemberUpdated, bot: Bot) -> None:
-    text = (
-        "😢 К сожалению, без прав администратора я не смогу проверять новых заявки "
-        "и отсеивать спамеров.\n\n"
-        "Права, которые мне нужны: \n"
-        "👉 Пригласительные ссылки"
+async def bot_demoted(
+    update: ChatMemberUpdated,
+    bot: Bot,
+    content_factory: ContentFactory,
+    storage_factory: StorageFactory,
+) -> None:
+    use_case = ChatSettingsUseCase(storage_factory)
+    await use_case.set_bot_permissions_status(
+        chat_id=update.chat.id, has_permissions=False
     )
+    text = content_factory.text.bot_demoted()
     await bot.send_message(chat_id=update.chat.id, text=text)
+
+
+@router.my_chat_member(
+    ChatMemberUpdatedFilter(member_status_changed=LEAVE_TRANSITION),
+)
+async def bot_left(
+    update: ChatMemberUpdated,
+    storage_factory: StorageFactory,
+) -> None:
+    use_case = ChatSettingsUseCase(storage_factory)
+    await use_case.set_bot_permissions_status(
+        chat_id=update.chat.id, has_permissions=False
+    )

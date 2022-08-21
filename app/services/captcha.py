@@ -21,12 +21,13 @@ class CaptchaService:
         self._captcha_duration = captcha_duration
         self._captcha_generator = captcha_generator
 
-    async def generate_captcha(self) -> CaptchaData:
-        return await self._captcha_generator.generate_captcha_data()
+    async def generate_captcha(self, language: str) -> CaptchaData:
+        return await self._captcha_generator.generate_captcha_data(language)
 
     async def get_captcha_result_image(self, status: CaptchaResultStatus) -> BytesIO:
+        folder = self._captcha_generator.get_captcha_image_folder()
         filename = f"captcha_{status.value}"
-        return self._captcha_generator.get_image(filename, "png")
+        return self._captcha_generator.get_image(folder, filename, "png")
 
     async def is_captcha_target(self, chat_id: int, user_id: int, salt: str) -> bool:
         return await self._lock_service.is_captcha_target(chat_id, user_id, salt)
