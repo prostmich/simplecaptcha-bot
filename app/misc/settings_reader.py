@@ -17,6 +17,7 @@ def ini_file_settings(_: Any) -> Mapping[str, Any]:
 
 class BotSettings(BaseModel):
     token: str
+    privacy_policy_link: str
 
 
 class WebhookSettings(BaseModel):
